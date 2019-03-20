@@ -1,16 +1,17 @@
-from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout
-
-app = QApplication([])
-
-window = QWidget()
-layout = QVBoxLayout()
-layout.addWidget(QPushButton('Ikkuna + nappi!'))
+import sys
+from PyQt5.QtWidgets import QApplication, QWidget
 
 
-window.setLayout(layout)
+def window():
+    app = QApplication(sys.argv)
+    w = QWidget()
+    w.setWindowTitle('Ikkuna')
 
-window.show()
 
-app.exec_()
+    w.show()
+    sys.exit(app.exec())
+
+window()
+
 
 
