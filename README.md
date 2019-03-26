@@ -1,7 +1,7 @@
 # Tower Defence
 
 1. Mitä ominaisuuksia olet jo toteuttanut projektiisi?
-    * Main menun ja parin nappulan toiminnallisuudet
+    * Main menun ja parin nappulan toiminnallisuudet.
     
     
 2. Käyttöohje
@@ -13,7 +13,7 @@
     * Ajamalla main.py.
     
   - Mitä sillä voi tässä vaiheessa tehdä?
-    * Ihmetellä miten ikkuna avautuu ja play nappula avaa uuden näkymän 
+    * Ihmetellä miten ikkuna avautuu ja play nappula avaa uuden näkymän. Joskus ohjelma tosin kaatuu tässä vaiheessa.
     
     
 3. Aikataulu
@@ -28,7 +28,7 @@
 4. Muuta
 
   - Onko ilmaantunut erityisiä ongelmia?
-    * Ohjelma kaatuilee tuntemattomista syistä ilman erroreita, enkä löydä vikaa. Yleisin exit koodi on -1073740940
+    * Ohjelma kaatuilee tuntemattomista syistä ilman erroreita, enkä löydä vikaa. Yleisin exit koodi on -1073740940. Kaatuminen tapahtuu silloin, kun painetaan päävalikossa "Play"-painiketta.
     
   - Oletko joutunut tekemään muutoksia suunnitelmaasi?
     * En ole vielä päässyt niin pitkälle. Ainakin Block-luokan olen lisännyt.
