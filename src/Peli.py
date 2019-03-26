@@ -65,35 +65,47 @@ class Peli(QMainWindow):
         print("Opettele pelaa")
 
     def game_setup(self):
+        print("1")
 
         self.init_gamewindow()
+        print("6")
+
         self.setup_sidebar()
+        print("10")
 
 
 #################################################
 #Create enemy
-        #self.enemy1 = QGraphicsEllipseItem(0, 0, 10, 10)
-        #self.enemy1.setBrush(QBrush(Qt.red))
+        self.enemy1 = QGraphicsEllipseItem(0, 0, 10, 10)
+        self.enemy1.setBrush(QBrush(Qt.red))
+        print("11")
 
-        #self.scene.addItem(self.enemy1)
+        self.scene.addItem(self.enemy1)
 ################################################
 
-        #self.timer = QTimer()
-        #self.timer.timeout.connect(self.update)
-        #self.timer.start(50)  # Milliseconds
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.update)
+        self.timer.start(50)  # Milliseconds
+        print("12")
 
-   # def update(self):
-    #    self.enemy1.moveBy(random.randint(-2,2),random.randint(-2,4))
+    def update(self):
+        self.enemy1.moveBy(random.randint(-2,2),random.randint(-2,4))
 
     def init_gamewindow(self):
+        print("2")
         self.scene.clear()
+        self.view.setGeometry(10, 10, 1000, 780)
         self.setGeometry(300, 150, 1250, 800)
         self.setWindowTitle("Peli")
-        self.view.setGeometry(10, 10, 1000, 780)
+
+        print("3")
+
 
         self.setCentralWidget(QWidget())
         self.h_box = QHBoxLayout()
         self.sidebox = QVBoxLayout()
+
+        print("4")
 
         self.centralWidget().setLayout(self.h_box)
         self.h_box.addWidget(self.view)
@@ -108,18 +120,26 @@ class Peli(QMainWindow):
 
         #######################
 
+        print("5")
 
 
 
 
 
     def setup_sidebar(self):
+        print("7")
+
+
         self.randomButton = QPushButton("random button")
+
+        print("8")
+
         self.sidebox.addWidget(self.randomButton)
 
         self.randomButton2 = QPushButton("random button 2")
         self.sidebox.addWidget(self.randomButton2)
 
+        print("9")
 
 
 
