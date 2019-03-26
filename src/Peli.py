@@ -1,10 +1,10 @@
 import sys
 from PyQt5.QtWidgets import *
 from PyQt5 import QtGui, QtCore
-from PyQt5.QtGui import QBrush, QColor, QPen, QPainter
-from PyQt5.QtCore import QTimer, Qt, QRectF
+from PyQt5.QtGui import QBrush
+from PyQt5.QtCore import QTimer, Qt
 import random
-
+from src import Mapper, Enemy
 
 class Peli(QMainWindow):
 
@@ -23,7 +23,7 @@ class Peli(QMainWindow):
     def init_mainmenu(self):
         self.setGeometry(self.left, self.top, self.width, self.height)
         self.setWindowTitle(self.title)
-        self.setWindowIcon(QtGui.QIcon("icon.png"))
+        self.setWindowIcon(QtGui.QIcon("data/icon.png"))
         self.scene = QGraphicsScene()
 
         self.view = QGraphicsView(self.scene, self)
@@ -33,22 +33,18 @@ class Peli(QMainWindow):
         howto = QPushButton("How to play")
         exit = QPushButton("Exit")
         settings = QPushButton("Settings")
-        #menulabel = QLabel(self)
-        #menulabel.setPixmap(QtGui.QPixmap("data/menu_label"))
-        #menulabel.setAlignment(QtCore.Qt.AlignHCenter)
-
 
         self.scene.addWidget(play)
-        play.setGeometry(0,0, 100, 50)
+        play.setGeometry(0,100, 100, 50)
         self.scene.addWidget(howto)
-        howto.setGeometry(0, 100, 100, 50)
+        howto.setGeometry(0, 200, 100, 50)
         self.scene.addWidget(exit)
-        exit.setGeometry(0, 200, 100, 50)
+        exit.setGeometry(0, 300, 100, 50)
         self.scene.addWidget(settings)
-        settings.setGeometry(0, 300, 100, 50)
+        settings.setGeometry(0, 400, 100, 50)
 
-        play.setIcon(QtGui.QIcon("icon.png"))
-        play.setIconSize(QtCore.QSize(30,30))
+        play.setIcon(QtGui.QIcon("data/icon.png"))
+        play.setIconSize(QtCore.QSize(30, 30))
 
 
         self.show()
@@ -65,82 +61,65 @@ class Peli(QMainWindow):
         print("Opettele pelaa")
 
     def game_setup(self):
-        print("1")
+        self.map = Mapper.Map()
 
         self.init_gamewindow()
-        print("6")
+        Mapper.draw_map(self.gamescene, self.map.blocks)
 
         self.setup_sidebar()
-        print("10")
 
 
-#################################################
 #Create enemy
-        self.enemy1 = QGraphicsEllipseItem(0, 0, 10, 10)
-        self.enemy1.setBrush(QBrush(Qt.red))
-        print("11")
+        self.enemy1 = Enemy.Enemy(10, 3, QBrush(Qt.blue))  #(hp=10, speed=2, brush=QBrush(Qt.red))
+        self.gamescene.addItem(self.enemy1)
 
-        self.scene.addItem(self.enemy1)
-################################################
 
         self.timer = QTimer()
         self.timer.timeout.connect(self.update)
         self.timer.start(50)  # Milliseconds
-        print("12")
+
+
 
     def update(self):
-        self.enemy1.moveBy(random.randint(-2,2),random.randint(-2,4))
+
+        self.enemy1.moveBy(0, self.enemy1.speed)#random.randint(-2,2),random.randint(-2,4)
+
 
     def init_gamewindow(self):
-        print("2")
-        self.scene.clear()
+
+        #self.scene.clear()                          #Possible segfault after scene.clear()
+        self.gamescene = QGraphicsScene()            #Attempt at fixing: Just add a new scene instead of using the last one
+        self.view.setScene(self.gamescene)
         self.view.setGeometry(10, 10, 1000, 780)
         self.setGeometry(300, 150, 1250, 800)
         self.setWindowTitle("Peli")
-
-        print("3")
-
 
         self.setCentralWidget(QWidget())
         self.h_box = QHBoxLayout()
         self.sidebox = QVBoxLayout()
 
-        print("4")
 
         self.centralWidget().setLayout(self.h_box)
         self.h_box.addWidget(self.view)
         self.h_box.addLayout(self.sidebox)
 
 
-        #######################
-        #   MAP CREATION
+    def setup_grid(self):
 
-
-
-
-        #######################
-
-        print("5")
-
-
+        for i in range(40):
+            for q in range(30):
+                rect = QGraphicsRectItem(0, 0, 20*i, 20*q)
+                self.gamescene.addItem(rect)
 
 
 
     def setup_sidebar(self):
-        print("7")
-
 
         self.randomButton = QPushButton("random button")
-
-        print("8")
-
         self.sidebox.addWidget(self.randomButton)
 
         self.randomButton2 = QPushButton("random button 2")
         self.sidebox.addWidget(self.randomButton2)
-
-        print("9")
-
 
 
 

@@ -1,10 +1,11 @@
 
 
 class Block():
-    def __init__(self, is_path=False, is_checkpoint=False):
+    def __init__(self, is_path=False, is_checkpoint=False, is_spawn=False):
 
         self.is_path = is_path
         self.is_checkPoint = is_checkpoint
+        self.is_spawn = is_spawn
         self.tower = None
 
     def get_tower(self):
