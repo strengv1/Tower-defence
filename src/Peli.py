@@ -1,8 +1,10 @@
 import sys
 from PyQt5.QtWidgets import *
 from PyQt5 import QtGui, QtCore
-from PyQt5.QtGui import QBrush, QColor
-from PyQt5.QtCore import QTimer, Qt
+from PyQt5.QtGui import QBrush, QColor, QPen, QPainter
+from PyQt5.QtCore import QTimer, Qt, QRectF
+import random
+
 
 class Peli(QMainWindow):
 
@@ -19,9 +21,9 @@ class Peli(QMainWindow):
 
 
     def init_mainmenu(self):
-        self.setWindowTitle(self.title)
         self.setGeometry(self.left, self.top, self.width, self.height)
-        self.setWindowIcon(QtGui.QIcon("data/icon.png"))
+        self.setWindowTitle(self.title)
+        self.setWindowIcon(QtGui.QIcon("icon.png"))
         self.scene = QGraphicsScene()
 
         self.view = QGraphicsView(self.scene, self)
@@ -45,7 +47,7 @@ class Peli(QMainWindow):
         self.scene.addWidget(settings)
         settings.setGeometry(0, 300, 100, 50)
 
-        play.setIcon(QtGui.QIcon("data/icon.png"))
+        play.setIcon(QtGui.QIcon("icon.png"))
         play.setIconSize(QtCore.QSize(30,30))
 
 
@@ -70,27 +72,18 @@ class Peli(QMainWindow):
 
 #################################################
 #Create enemy
-        self.enemy1 = QGraphicsEllipseItem(-1000, 0, 10, 10)
-        self.enemy1.setBrush(QBrush(Qt.red))
+        #self.enemy1 = QGraphicsEllipseItem(0, 0, 10, 10)
+        #self.enemy1.setBrush(QBrush(Qt.red))
 
-        self.scene.addItem(self.enemy1)
+        #self.scene.addItem(self.enemy1)
 ################################################
 
-      #  self.timer = QTimer()
-       # self.timer.timeout.connect(self.update)
-        #self.timer.start(23)  # Milliseconds
+        #self.timer = QTimer()
+        #self.timer.timeout.connect(self.update)
+        #self.timer.start(50)  # Milliseconds
 
-    #def update(self):
-     #   self.enemy1.moveBy(2,0)
-
-
-    def setup_sidebar(self):
-        self.randomButton = QPushButton("random button")
-        self.sidebox.addWidget(self.randomButton)
-
-        self.randomButton2 = QPushButton("random button 2")
-        self.sidebox.addWidget(self.randomButton2)
-
+   # def update(self):
+    #    self.enemy1.moveBy(random.randint(-2,2),random.randint(-2,4))
 
     def init_gamewindow(self):
         self.scene.clear()
@@ -105,6 +98,29 @@ class Peli(QMainWindow):
         self.centralWidget().setLayout(self.h_box)
         self.h_box.addWidget(self.view)
         self.h_box.addLayout(self.sidebox)
+
+
+        #######################
+        #   MAP CREATION
+
+
+
+
+        #######################
+
+
+
+
+
+
+    def setup_sidebar(self):
+        self.randomButton = QPushButton("random button")
+        self.sidebox.addWidget(self.randomButton)
+
+        self.randomButton2 = QPushButton("random button 2")
+        self.sidebox.addWidget(self.randomButton2)
+
+
 
 
 
