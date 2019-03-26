@@ -2,7 +2,8 @@
 
 1. Mitä ominaisuuksia olet jo toteuttanut projektiisi?
     * Main menun ja parin nappulan toiminnallisuudet.
-    
+    * Mapper-luokan avulla kartan piirto onnistuu tiedostosta
+    * Vihollisia voi luoda käyttämällä Enemy-luokkaa
     
 2. Käyttöohje
 
@@ -13,7 +14,7 @@
     * Ajamalla main.py.
     
   - Mitä sillä voi tässä vaiheessa tehdä?
-    * Ihmetellä miten ikkuna avautuu ja play nappula avaa uuden näkymän. Joskus ohjelma tosin kaatuu tässä vaiheessa.
+    * Ihmetellä miten ikkuna avautuu ja play nappula avaa uuden näkymän, jossa kuuluisi näkyä yksinkertainen kartta ja vihollinen.
     
     
 3. Aikataulu
