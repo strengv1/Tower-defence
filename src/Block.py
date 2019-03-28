@@ -1,5 +1,8 @@
 
-
+"""
+Kuvastaa yhtä ruutua, ja vastaa siitä, millainen ruutu on kyseessä.
+Funktioiden toiminta on selitettävissä niiden nimillä
+"""
 class Block():
     def __init__(self, is_path=False, is_checkpoint=False, is_spawn=False):
 
@@ -7,6 +10,10 @@ class Block():
         self.is_checkPoint = is_checkpoint
         self.is_spawn = is_spawn
         self.tower = None
+        self.x = 0
+        self.y = 0
+        self.center = (0,0)
+
 
     def get_tower(self):
         return self.tower
@@ -22,15 +29,5 @@ class Block():
         self.tower = None
 
 
-    def is_path(self):
-        if self.is_path:
-            return True
-        else:
-            return False
 
-    def is_checkPoint(self):
-        if self.is_checkPoint:
-            return True
-        else:
-            return False
 
