@@ -5,7 +5,7 @@ from PyQt5.QtGui import QBrush
 from PyQt5.QtCore import QTimer, Qt
 from math import floor
 
-from src import Mapper, Enemy
+from src import Mapper, Enemy, Tower, Player
 
 class Peli(QMainWindow):
 
@@ -69,6 +69,20 @@ class Peli(QMainWindow):
     def how_to_play(self):
         print("Opettele pelaa")
 
+    """
+    Spawn a basicturret and set its original position (Outside the playable map)
+    """
+    def basicTurret_clicked(self):
+
+        if self.player.money >= 200:
+
+            self.player.money -= 200
+            self.tower1 = Tower.Tower()
+            self.tower1.body.moveBy( len(self.map.blocks[0])*self.blockWidth, len(self.map.blocks)*self.blockHeight/2)
+
+            self.gamescene.addItem(self.tower1.body)
+        else:
+            print("NOT ENOUGH CASH u poor shit")
 
     """
     Define what the "Play" button does
@@ -77,6 +91,7 @@ class Peli(QMainWindow):
 
         self.blockHeight = 30
         self.blockWidth = 30
+        self.player = Player.Player()
         self.map = Mapper.Map()
 
         self.init_gamewindow()
@@ -126,8 +141,10 @@ class Peli(QMainWindow):
     """
     def setup_sidebar(self):
 
-        self.randomButton = QPushButton("random button")
-        self.sidebox.addWidget(self.randomButton)
+        self.basicTurret = QPushButton("Basic Turret (200$)")
+        self.sidebox.addWidget(self.basicTurret)
+        self.basicTurret.clicked.connect(self.basicTurret_clicked)
+
 
         self.randomButton2 = QPushButton("random button 2")
         self.sidebox.addWidget(self.randomButton2)
@@ -155,7 +172,6 @@ class Peli(QMainWindow):
                 continue
 
             enemy = self.enemies[i]                                                                 #Current enemy
-
 
 
             if enemy.direction == 1 and block.is_checkPoint and block.center[0]-1 < enemy.x()+enemy.radius and not enemy.in_a_checkpoint:
