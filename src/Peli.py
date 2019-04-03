@@ -77,12 +77,14 @@ class Peli(QMainWindow):
         if self.player.money >= 200:
 
             self.player.money -= 200
-            self.tower1 = Tower.Tower()
-            self.tower1.body.moveBy( len(self.map.blocks[0])*self.blockWidth, len(self.map.blocks)*self.blockHeight/2)
+            self.towers.append(Tower.Tower())
+            self.towers[self.towercount].moveBy( len(self.map.blocks[0])*self.blockWidth, len(self.map.blocks)*self.blockHeight/2)
 
-            self.gamescene.addItem(self.tower1.body)
+            self.gamescene.addItem(self.towers[self.towercount])
+            self.towercount += 1
+
         else:
-            print("NOT ENOUGH CASH u poor shit")
+            print("NOT ENOUGH CASH u poor mf")
 
     """
     Define what the "Play" button does
@@ -104,13 +106,14 @@ class Peli(QMainWindow):
         self.timer.timeout.connect(self.update)
         self.timer.start(20)                                    # Frame-update-frequency in milliseconds
 
-
-
+        #Towers!
+        self.towers = []
+        self.towercount = 0
         #Create enemies!
         self.enemies = []
-        self.enemycount = 6
+        self.enemycount = 1
         for i in range(self.enemycount):
-            self.enemies.append(Enemy.Enemy(10, 1+0.3*i, QBrush(Qt.blue), spawn))    # (hp=10, speed=2, brush=QBrush(Qt.red), spawn,radius, direction)
+            self.enemies.append(Enemy.Enemy(10, 5, QBrush(Qt.blue), spawn))    # (hp=10, speed=2, brush=QBrush(Qt.red), spawn,radius, direction)
             self.gamescene.addItem(self.enemies[i])
 
 
@@ -120,7 +123,6 @@ class Peli(QMainWindow):
     """
     def init_gamewindow(self):
 
-        #self.scene.clear()                          #Possible segfault after scene.clear()
         self.gamescene = QGraphicsScene()            #Attempt at fixing: Just add a new scene instead of using the last one
         self.view.setScene(self.gamescene)
         self.view.setGeometry(10, 10, 1000, 780)
@@ -151,15 +153,21 @@ class Peli(QMainWindow):
 
 
 
+
+
     """
     Call this every frame           (int(self.enemies[0].pos().x()/self.blockWidth), int(self.enemies[0].pos().y()/self.blockHeight)), position of an enemy
     """
     def update(self):
+
+        #if self.towercount > 0:
+         #   for i in range(self.towercount):
+          #      Tower.aim_at(self.towers[i], self.enemies[0].pos().x(), self.enemies[0].pos().y())
+
+
+
         for i in range(self.enemycount):
 
-            """
-            Find out if the enemy is on a checkpoint or not, and act accordingly. Ugly way to do it but I couldn't find an easier way just yet.
-            """
             block = self.enemies[i].get_block(self.map.blocks, self.blockWidth, self.blockHeight)   #Block the enemy is on currently
 
             """
@@ -171,29 +179,9 @@ class Peli(QMainWindow):
                 self.enemycount -= 1
                 continue
 
-            enemy = self.enemies[i]                                                                 #Current enemy
+            enemy = self.enemies[i]       #Current enemy
 
-
-            if enemy.direction == 1 and block.is_checkPoint and block.center[0]-1 < enemy.x()+enemy.radius and not enemy.in_a_checkpoint:
-                enemy.in_a_checkpoint = True
-                # Found a checkPoint, left or right?
-                dir = self.map.left_or_right(floor(enemy.x() / self.blockWidth), floor(enemy.y() / self.blockHeight), enemy.direction)
-                enemy.turn(dir)
-            elif enemy.direction == 2 and block.is_checkPoint and block.center[1]-1 < enemy.y()+enemy.radius and not enemy.in_a_checkpoint:
-                enemy.in_a_checkpoint = True
-                dir = self.map.left_or_right(floor(enemy.x() / self.blockWidth), floor(enemy.y() / self.blockHeight), enemy.direction)
-                enemy.turn(dir)
-            elif enemy.direction == 3 and block.is_checkPoint and block.center[0]+1 > enemy.x()+enemy.radius and not enemy.in_a_checkpoint:
-                enemy.in_a_checkpoint = True
-                dir = self.map.left_or_right(floor(enemy.x() / self.blockWidth), floor(enemy.y() / self.blockHeight), enemy.direction)
-                enemy.turn(dir)
-            elif enemy.direction == 4 and block.is_checkPoint and block.center[1]+1 > enemy.y() + enemy.radius and not enemy.in_a_checkpoint:
-                enemy.in_a_checkpoint = True
-                dir = self.map.left_or_right(floor(enemy.x() / self.blockWidth), floor(enemy.y() / self.blockHeight), enemy.direction)
-                enemy.turn(dir)
-
-            if not self.map.blocks[floor(enemy.y() / self.blockHeight)][floor(enemy.x() / self.blockWidth)].is_checkPoint:
-                enemy.in_a_checkpoint = False
+            Enemy.check_for_checkpoint(enemy, block, self.map, self.blockWidth, self.blockHeight)
 
             """
             Move in wanted direction
@@ -206,6 +194,9 @@ class Peli(QMainWindow):
                 enemy.moveBy(-enemy.speed, 0)
             elif enemy.direction == 4:
                 enemy.moveBy(0, -enemy.speed)
+
+
+
 
 
 
