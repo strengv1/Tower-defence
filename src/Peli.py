@@ -56,6 +56,7 @@ class Peli(QMainWindow):
         exit.clicked.connect(self.close_game)
         howto.clicked.connect(self.how_to_play)
 
+
     """
     Define what the exit button does
     """
@@ -68,6 +69,15 @@ class Peli(QMainWindow):
     """
     def how_to_play(self):
         print("Opettele pelaa")
+    """
+    Define what "spawn an enemy" button does in the sidebar
+    """
+    def spawn_enemy(self):
+
+        self.enemycount += 1
+
+        self.enemies.append(Enemy.Enemy(self.spawn))  # (spawn, type="basic")
+        self.gamescene.addItem(self.enemies[self.enemycount-1])
 
     """
     Spawn a basicturret and set its original position (Outside the playable map)
@@ -76,19 +86,11 @@ class Peli(QMainWindow):
 
         if self.player.money >= 200:
 
-            #self.player.money -= 200
-            #self.towers.append(Tower.Tower())
-            #self.towers[self.towercount].moveBy( len(self.map.blocks[0])*self.blockWidth, len(self.map.blocks)*self.blockHeight/2)
-
-            #self.gamescene.addItem(self.towers[self.towercount])
-            #self.towercount += 1
-
+            self.player.money -= 200
             self.towers.append(Tower.Tower())
             self.towers[self.towercount].moveBy(len(self.map.blocks[0]) * self.blockWidth,
                                                 len(self.map.blocks) * self.blockHeight / 2)
-
             self.gamescene.addItem(self.towers[self.towercount])
-
             self.towercount += 1
         else:
             print("NOT ENOUGH CASH u poor mf")
@@ -104,7 +106,7 @@ class Peli(QMainWindow):
         self.map = Mapper.Map()
 
         self.init_gamewindow()
-        spawn = Mapper.draw_map(self.gamescene, self.map.blocks, self.blockHeight, self.blockWidth)
+        self.spawn = Mapper.draw_map(self.gamescene, self.map.blocks, self.blockHeight, self.blockWidth)
 
 
         self.setup_sidebar()
@@ -118,9 +120,9 @@ class Peli(QMainWindow):
         self.towercount = 0
         #Create enemies!
         self.enemies = []
-        self.enemycount = 3
+        self.enemycount = 1
         for i in range(self.enemycount):
-            self.enemies.append(Enemy.Enemy(10, 2-0.3*i, QBrush(Qt.blue), spawn))    # (hp=10, speed=2, brush=QBrush(Qt.red), spawn,radius, direction)
+            self.enemies.append(Enemy.Enemy(self.spawn))    # (spawn, type="basic")
             self.gamescene.addItem(self.enemies[i])
 
 
@@ -155,8 +157,9 @@ class Peli(QMainWindow):
         self.basicTurret.clicked.connect(self.basicTurret_clicked)
 
 
-        self.randomButton2 = QPushButton("random button 2")
+        self.randomButton2 = QPushButton("spawn an enemy")
         self.sidebox.addWidget(self.randomButton2)
+        self.randomButton2.clicked.connect(self.spawn_enemy)
 
 
 
@@ -166,7 +169,6 @@ class Peli(QMainWindow):
     Call this every frame           
     """
     def update(self):
-
         """
         Move the enemies
         """
@@ -175,9 +177,7 @@ class Peli(QMainWindow):
             # Block the enemy is currently on
             block = enemy.get_block(self.map.blocks, self.blockWidth, self.blockHeight)
 
-            """
-            Do whatever when the enemy gets to the end (NoneType-block for now)
-            """
+            #Do whatever when the enemy gets to the end (NoneType-block for now)
             if block == None:
                 self.gamescene.removeItem(enemy)
                 self.enemies.remove(enemy)
@@ -188,14 +188,15 @@ class Peli(QMainWindow):
             Enemy.check_for_checkpoint(enemy, block, self.map, self.blockWidth, self.blockHeight)
             enemy.move()
 
-
+            # Determine who the towers want to aim at
             for q in self.towers:
                 if enemy.collidesWithItem(q.rangeIndicator) and q.target is None:
-                    #Tower.aim_at(self.towers[q], i.pos().x(), i.pos().y())
                     q.target = index
             index += 1
 
+        # Take aim at the enemy we determined earlier, and reset it after
         for tow in self.towers:
             if tow.target is not None:
                 tow.aim_at(self.enemies[tow.target].pos().x(), self.enemies[tow.target].pos().y())
                 tow.target = None
+

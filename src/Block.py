@@ -12,22 +12,9 @@ class Block():
         self.tower = None
         self.x = 0
         self.y = 0
-        self.center = (0,0)
-
-
-    def get_tower(self):
-        return self.tower
+        self.center = (0, 0)
 
     def set_tower(self, tower):
-        if self.tower == None:
-            self.tower = tower
-            return 1
-        else:
-            return -1
-
-    def remove_tower(self):
-        self.tower = None
-
-
-
+        self.tower = tower
+        self.tower.setPos( self.center )
 

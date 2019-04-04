@@ -59,6 +59,9 @@ class Map():
             else:
                 return "right"
 
+
+    def get_blocks(self):
+        return self.blocks
 """
 Kartan piirto, ottaa sisäänsä scenen johon halutaan palikat piirrettäväksi, sekä listan joka sisältää palikat.
 Palauttaa spawnin sijainnin
