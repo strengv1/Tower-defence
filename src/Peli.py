@@ -76,13 +76,20 @@ class Peli(QMainWindow):
 
         if self.player.money >= 200:
 
-            self.player.money -= 200
+            #self.player.money -= 200
+            #self.towers.append(Tower.Tower())
+            #self.towers[self.towercount].moveBy( len(self.map.blocks[0])*self.blockWidth, len(self.map.blocks)*self.blockHeight/2)
+
+            #self.gamescene.addItem(self.towers[self.towercount])
+            #self.towercount += 1
+
             self.towers.append(Tower.Tower())
-            self.towers[self.towercount].moveBy( len(self.map.blocks[0])*self.blockWidth, len(self.map.blocks)*self.blockHeight/2)
+            self.towers[self.towercount].moveBy(len(self.map.blocks[0]) * self.blockWidth,
+                                                len(self.map.blocks) * self.blockHeight / 2)
 
             self.gamescene.addItem(self.towers[self.towercount])
-            self.towercount += 1
 
+            self.towercount += 1
         else:
             print("NOT ENOUGH CASH u poor mf")
 
@@ -179,25 +186,16 @@ class Peli(QMainWindow):
 
             # Check whether we are supposed to turn or not
             Enemy.check_for_checkpoint(enemy, block, self.map, self.blockWidth, self.blockHeight)
+            enemy.move()
 
-            """
-            Move in wanted direction
-            """
-            if enemy.direction == 1:                  #Dir: right=1, down=2, left=3, up=4
-                enemy.moveBy(enemy.speed, 0)
-            elif enemy.direction == 2:
-                enemy.moveBy(0, enemy.speed)
-            elif enemy.direction == 3:
-                enemy.moveBy(-enemy.speed, 0)
-            elif enemy.direction == 4:
-                enemy.moveBy(0, -enemy.speed)
 
             for q in self.towers:
                 if enemy.collidesWithItem(q.rangeIndicator) and q.target is None:
                     #Tower.aim_at(self.towers[q], i.pos().x(), i.pos().y())
                     q.target = index
             index += 1
+
         for tow in self.towers:
             if tow.target is not None:
-                Tower.aim_at(tow, self.enemies[tow.target].pos().x(), self.enemies[tow.target].pos().y())
+                tow.aim_at(self.enemies[tow.target].pos().x(), self.enemies[tow.target].pos().y())
                 tow.target = None

@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QGraphicsEllipseItem
+from PyQt5.QtWidgets import QGraphicsEllipseItem, QGraphicsRectItem
 from PyQt5.QtGui import QBrush
 from PyQt5.QtCore import Qt
 from math import floor
@@ -23,6 +23,8 @@ class Enemy(QGraphicsEllipseItem):
         self.radius = radius
         self.in_a_checkpoint = False
 
+
+
     """
     Kuinka tehdä käännös, dir on string "left" tai "right"
     """
@@ -37,6 +39,21 @@ class Enemy(QGraphicsEllipseItem):
                 self.direction = 1
             else:
                 self.direction = self.direction+1
+
+    """
+    Move in wanted direction
+    """
+    def move(self):
+
+        if self.direction == 1:  # Dir: right=1, down=2, left=3, up=4
+            self.moveBy(self.speed, 0)
+        elif self.direction == 2:
+            self.moveBy(0, self.speed)
+        elif self.direction == 3:
+            self.moveBy(-self.speed, 0)
+        elif self.direction == 4:
+            self.moveBy(0, -self.speed)
+
 
 
     """
