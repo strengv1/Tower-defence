@@ -111,9 +111,9 @@ class Peli(QMainWindow):
         self.towercount = 0
         #Create enemies!
         self.enemies = []
-        self.enemycount = 1
+        self.enemycount = 3
         for i in range(self.enemycount):
-            self.enemies.append(Enemy.Enemy(10, 5, QBrush(Qt.blue), spawn))    # (hp=10, speed=2, brush=QBrush(Qt.red), spawn,radius, direction)
+            self.enemies.append(Enemy.Enemy(10, 1+0.3*i, QBrush(Qt.blue), spawn))    # (hp=10, speed=2, brush=QBrush(Qt.red), spawn,radius, direction)
             self.gamescene.addItem(self.enemies[i])
 
 
@@ -156,19 +156,17 @@ class Peli(QMainWindow):
 
 
     """
-    Call this every frame           (int(self.enemies[0].pos().x()/self.blockWidth), int(self.enemies[0].pos().y()/self.blockHeight)), position of an enemy
+    Call this every frame           
     """
     def update(self):
 
-        #if self.towercount > 0:
-         #   for i in range(self.towercount):
-          #      Tower.aim_at(self.towers[i], self.enemies[0].pos().x(), self.enemies[0].pos().y())
-
-
-
+        """
+        Move the enemies
+        """
         for i in range(self.enemycount):
 
-            block = self.enemies[i].get_block(self.map.blocks, self.blockWidth, self.blockHeight)   #Block the enemy is on currently
+            # Block the enemy is currently on
+            block = self.enemies[i].get_block(self.map.blocks, self.blockWidth, self.blockHeight)
 
             """
             Do whatever when the enemy gets to the end (NoneType-block for now)
@@ -181,6 +179,7 @@ class Peli(QMainWindow):
 
             enemy = self.enemies[i]       #Current enemy
 
+            # Check whether we are supposed to turn or not
             Enemy.check_for_checkpoint(enemy, block, self.map, self.blockWidth, self.blockHeight)
 
             """
@@ -195,8 +194,6 @@ class Peli(QMainWindow):
             elif enemy.direction == 4:
                 enemy.moveBy(0, -enemy.speed)
 
-
-
-
-
-
+            for i in range(self.towercount):
+                if enemy.collidesWithItem(self.towers[i].rangeIndicator):
+                    Tower.aim_at(self.towers[i], enemy.pos().x(), enemy.pos().y())
