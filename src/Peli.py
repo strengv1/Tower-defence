@@ -113,7 +113,7 @@ class Peli(QMainWindow):
         self.enemies = []
         self.enemycount = 3
         for i in range(self.enemycount):
-            self.enemies.append(Enemy.Enemy(10, 1+0.3*i, QBrush(Qt.blue), spawn))    # (hp=10, speed=2, brush=QBrush(Qt.red), spawn,radius, direction)
+            self.enemies.append(Enemy.Enemy(10, 2-0.3*i, QBrush(Qt.blue), spawn))    # (hp=10, speed=2, brush=QBrush(Qt.red), spawn,radius, direction)
             self.gamescene.addItem(self.enemies[i])
 
 
@@ -163,21 +163,19 @@ class Peli(QMainWindow):
         """
         Move the enemies
         """
-        for i in range(self.enemycount):
-
+        index = 0
+        for enemy in self.enemies:
             # Block the enemy is currently on
-            block = self.enemies[i].get_block(self.map.blocks, self.blockWidth, self.blockHeight)
+            block = enemy.get_block(self.map.blocks, self.blockWidth, self.blockHeight)
 
             """
             Do whatever when the enemy gets to the end (NoneType-block for now)
             """
             if block == None:
-                self.gamescene.removeItem(self.enemies[i])
-                self.enemies.pop(i)
+                self.gamescene.removeItem(enemy)
+                self.enemies.remove(enemy)
                 self.enemycount -= 1
                 continue
-
-            enemy = self.enemies[i]       #Current enemy
 
             # Check whether we are supposed to turn or not
             Enemy.check_for_checkpoint(enemy, block, self.map, self.blockWidth, self.blockHeight)
@@ -194,6 +192,12 @@ class Peli(QMainWindow):
             elif enemy.direction == 4:
                 enemy.moveBy(0, -enemy.speed)
 
-            for i in range(self.towercount):
-                if enemy.collidesWithItem(self.towers[i].rangeIndicator):
-                    Tower.aim_at(self.towers[i], enemy.pos().x(), enemy.pos().y())
+            for q in self.towers:
+                if enemy.collidesWithItem(q.rangeIndicator) and q.target is None:
+                    #Tower.aim_at(self.towers[q], i.pos().x(), i.pos().y())
+                    q.target = index
+            index += 1
+        for tow in self.towers:
+            if tow.target is not None:
+                Tower.aim_at(tow, self.enemies[tow.target].pos().x(), self.enemies[tow.target].pos().y())
+                tow.target = None

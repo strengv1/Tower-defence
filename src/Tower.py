@@ -14,10 +14,12 @@ class Tower(QGraphicsItemGroup):
             self.range = 160
             self.setFlag(QGraphicsRectItem.ItemIsMovable)
 
+
             self.body = QGraphicsRectItem(0, 0, 30, 30)
             self.body.setBrush(QBrush(Qt.blue))
             self.body.setPos(self.range/2-15, self.range/2-15)
 
+            self.target = None
 
 
             self.pipe = QGraphicsRectItem(0, 0, 30, 10)
