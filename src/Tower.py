@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QGraphicsRectItem,QGraphicsEllipseItem
 from PyQt5.QtGui import QBrush
 from PyQt5.QtCore import Qt, QPointF
-from math import degrees, acos, hypot, floor
+from math import degrees, acos, hypot
 from src import Peli
 
 class Tower(QGraphicsRectItem):
@@ -15,23 +15,25 @@ class Tower(QGraphicsRectItem):
 
             self.setBrush(QBrush(Qt.blue))
             self.setPos(self.range / 2 - 15, self.range / 2 - 15)
-            self.setFlag(self.ItemIsMovable)
+            self.setFlag(self.ItemIsMovable, self.ItemIsSelectable)
 
             self.pipe = QGraphicsRectItem(0, 0, 25, 10, self)
             self.pipe.setBrush(QBrush(Qt.darkBlue))
             self.pipe.setPos(15, 10)
             self.pipe.setTransformOriginPoint(QPointF(0, 5))
 
-
             self.rangeIndicator = QGraphicsEllipseItem(-self.range/2+15, -self.range/2+15, self.range, self.range, self)
+
+
+    def mouseMoveEvent(self, event):
+        self.setPos(event.scenePos())
+        self.setPos(QPointF(self.x() - self.x() % 30, self.y() - self.y() % 30))
 
     def mouseReleaseEvent(self, event):
         if self.rangeIndicator.isVisible():
             self.rangeIndicator.hide()
         else:
             self.rangeIndicator.show()
-        self.setPos(QPointF(self.x()-self.x()%30, self.y()-self.y()%30))
-
 
 
 
