@@ -9,18 +9,31 @@ Enemy's position (enemy.pos()) is top left corner. To get the correct pos, call 
 """
 class Enemy(QGraphicsEllipseItem):
     def __init__(self, spawn, type = "basic"):
-        self.radius = 10
-        super().__init__(0, 0, self.radius*2, self.radius*2)
         if type == "basic":
+            self.radius = 13
+            super().__init__(0, 0, self.radius*2, self.radius*2)
+
             self.hp = 10
-            self.speed = 2
+            self.speed = 4
             self.setBrush(Qt.blue)
-            spawn = spawn
             self.direction = 1
 
-        self.moveBy(0, 5)
+        if type == "fast":
+            self.radius = 7
+            super().__init__(0, 0, self.radius*2, self.radius*2)
+
+            self.hp = 6
+            self.speed = 6
+            self.setBrush(Qt.blue)
+            self.direction = 1
+
+        self.moveBy(0, 15-self.radius)
         self.moveBy(spawn[0]*30, spawn[1]*30)
         self.in_a_checkpoint = False
+
+        self.distance = 0
+        self.hpBar = QGraphicsRectItem(0,-5,self.hp*2,3, self)
+        self.hpBar.setBrush(Qt.red)
 
 
 
@@ -43,7 +56,7 @@ class Enemy(QGraphicsEllipseItem):
     Move in wanted direction
     """
     def move(self):
-
+        self.distance += self.speed
         if self.direction == 1:  # Dir: right=1, down=2, left=3, up=4
             self.moveBy(self.speed, 0)
         elif self.direction == 2:
@@ -76,7 +89,7 @@ def check_for_checkpoint(enemy, block, map, blockWidth, blockHeight):
             enemy.in_a_checkpoint = True
             dir = map.left_or_right(floor(enemy.x() / blockWidth), floor(enemy.y() / blockHeight), enemy.direction)
             enemy.turn(dir)
-        elif not enemy.in_a_checkpoint and enemy.direction == 3 and block.is_checkPoint and block.center[0] + 1 > enemy.x() + enemy.radius:
+        elif not enemy.in_a_checkpoint and enemy.direction == 3 and block.is_checkPoint and block.center[0] + 2 > enemy.x() + enemy.radius:
             enemy.in_a_checkpoint = True
             dir = map.left_or_right(floor(enemy.x() / blockWidth), floor(enemy.y() / blockHeight), enemy.direction)
             enemy.turn(dir)

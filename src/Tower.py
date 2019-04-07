@@ -11,7 +11,7 @@ class Tower(QGraphicsRectItem):
 
         if type == "basic":
             self.range = 200
-            self.target = None
+            self.furthestTarget = (0, 0)
 
             self.setBrush(QBrush(Qt.blue))
             self.setPos(self.range / 2 - 15, self.range / 2 - 15)
@@ -27,14 +27,15 @@ class Tower(QGraphicsRectItem):
 
     def mouseMoveEvent(self, event):
         self.setPos(event.scenePos())
+        self.pipe.setBrush(Qt.darkGray)
+        self.setBrush(Qt.gray)
         self.setPos(QPointF(self.x() - self.x() % 30, self.y() - self.y() % 30))
 
     def mouseReleaseEvent(self, event):
-        if self.rangeIndicator.isVisible():
-            self.rangeIndicator.hide()
-        else:
-            self.rangeIndicator.show()
-
+        self.setBrush(Qt.blue)
+        self.pipe.setBrush(Qt.darkBlue)
+        self.setFlag(self.ItemIsMovable, False)
+        self.rangeIndicator.hide()
 
 
     """

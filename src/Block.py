@@ -9,12 +9,8 @@ class Block():
         self.is_path = is_path
         self.is_checkPoint = is_checkpoint
         self.is_spawn = is_spawn
-        self.tower = None
         self.x = 0
         self.y = 0
         self.center = (0, 0)
 
-    def set_tower(self, tower):
-        self.tower = tower
-        self.tower.setPos( self.center )
 

@@ -79,6 +79,18 @@ class Peli(QMainWindow):
         self.enemies.append(Enemy.Enemy(self.spawn))  # (spawn, type="basic")
         self.gamescene.addItem(self.enemies[self.enemycount-1])
 
+    def spawn_fast_enemy(self):
+        self.enemycount += 1
+        self.enemies.append(Enemy.Enemy(self.spawn, "fast"))
+        self.gamescene.addItem(self.enemies[self.enemycount-1])
+    """
+    Go back to main menu, not saving the game (yet)
+    """
+    def back_to_menu(self):
+        self.close()
+        self.init_mainmenu()
+
+
     """
     Spawn a basicturret and set its original position (Outside the playable map)
     """
@@ -113,7 +125,7 @@ class Peli(QMainWindow):
 
         self.timer = QTimer()                                   #  Start the timer
         self.timer.timeout.connect(self.update)
-        self.timer.start(20)                                    # Frame-update-frequency in milliseconds
+        self.timer.start(50)                                    # Frame-update-frequency in milliseconds
 
         #Towers!
         self.towers = []
@@ -157,11 +169,17 @@ class Peli(QMainWindow):
         self.basicTurret.clicked.connect(self.basicTurret_clicked)
 
 
-        self.randomButton2 = QPushButton("spawn an enemy")
-        self.sidebox.addWidget(self.randomButton2)
-        self.randomButton2.clicked.connect(self.spawn_enemy)
+        self.spawnEnemy = QPushButton("spawn an enemy")
+        self.sidebox.addWidget(self.spawnEnemy)
+        self.spawnEnemy.clicked.connect(self.spawn_enemy)
 
+        self.spawnFastEnemy = QPushButton("Spawn a fast enemy")
+        self.sidebox.addWidget(self.spawnFastEnemy)
+        self.spawnFastEnemy.clicked.connect(self.spawn_fast_enemy)
 
+        self.backtomainmenu = QPushButton("Back to main menu")
+        self.sidebox.addWidget(self.backtomainmenu)
+        self.backtomainmenu.clicked.connect(self.back_to_menu)
 
 
 
@@ -187,16 +205,17 @@ class Peli(QMainWindow):
             # Check whether we are supposed to turn or not
             Enemy.check_for_checkpoint(enemy, block, self.map, self.blockWidth, self.blockHeight)
             enemy.move()
-
             # Determine who the towers want to aim at
             for q in self.towers:
-                if enemy.collidesWithItem(q.rangeIndicator) and q.target is None:
-                    q.target = index
+                if enemy.collidesWithItem(q.rangeIndicator) and enemy.distance > q.furthestTarget[0]:
+                    q.furthestTarget = (enemy.distance, index)
+
+
             index += 1
 
         # Take aim at the enemy we determined earlier, and reset it after
         for tow in self.towers:
-            if tow.target is not None:
-                tow.aim_at(self.enemies[tow.target].pos().x(), self.enemies[tow.target].pos().y())
-                tow.target = None
+            if tow.furthestTarget is not (0, 0):
+                tow.aim_at(self.enemies[tow.furthestTarget[1]].pos().x(), self.enemies[tow.furthestTarget[1]].pos().y())
+                tow.furthestTarget = (0, 0)
 
