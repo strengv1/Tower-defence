@@ -73,16 +73,15 @@ class Peli(QMainWindow):
     Define what "spawn an enemy" button does in the sidebar
     """
     def spawn_enemy(self):
-
-        self.enemycount += 1
-
         self.enemies.append(Enemy.Enemy(self.spawn))  # (spawn, type="basic")
-        self.gamescene.addItem(self.enemies[self.enemycount-1])
+        self.gamescene.addItem(self.enemies[self.enemycount])
+        self.enemycount += 1
 
     def spawn_fast_enemy(self):
-        self.enemycount += 1
         self.enemies.append(Enemy.Enemy(self.spawn, "fast"))
-        self.gamescene.addItem(self.enemies[self.enemycount-1])
+        self.gamescene.addItem(self.enemies[self.enemycount])
+        self.enemycount += 1
+
     """
     Go back to main menu, not saving the game (yet)
     """
@@ -125,19 +124,18 @@ class Peli(QMainWindow):
 
         self.timer = QTimer()                                   #  Start the timer
         self.timer.timeout.connect(self.update)
-        self.timer.start(50)                                    # Frame-update-frequency in milliseconds
+        self.timer.start(20)                                    # Frame-update-frequency in milliseconds
 
         #Towers!
         self.towers = []
         self.towercount = 0
+
         #Create enemies!
         self.enemies = []
-        self.enemycount = 1
-        for i in range(self.enemycount):
-            self.enemies.append(Enemy.Enemy(self.spawn))    # (spawn, type="basic")
-            self.gamescene.addItem(self.enemies[i])
+        self.enemycount = 0
 
-
+        #Projectiles
+        self.projectiles = []
 
     """
     Initializes the window after pressing "play" from mainmenu
@@ -181,8 +179,6 @@ class Peli(QMainWindow):
         self.sidebox.addWidget(self.backtomainmenu)
         self.backtomainmenu.clicked.connect(self.back_to_menu)
 
-
-
     """
     Call this every frame           
     """
@@ -192,13 +188,17 @@ class Peli(QMainWindow):
         """
         index = 0
         for enemy in self.enemies:
+            if enemy.hp <= 0:
+                enemy.delete(self.gamescene, self.enemies)
+                self.enemycount -= 1
+                continue
+            enemy.hpBar.setRect(0, -5, enemy.hp*2, 3)
             # Block the enemy is currently on
             block = enemy.get_block(self.map.blocks, self.blockWidth, self.blockHeight)
 
             #Do whatever when the enemy gets to the end (NoneType-block for now)
             if block == None:
-                self.gamescene.removeItem(enemy)
-                self.enemies.remove(enemy)
+                enemy.delete(self.gamescene, self.enemies)
                 self.enemycount -= 1
                 continue
 
@@ -208,14 +208,17 @@ class Peli(QMainWindow):
             # Determine who the towers want to aim at
             for q in self.towers:
                 if enemy.collidesWithItem(q.rangeIndicator) and enemy.distance > q.furthestTarget[0]:
-                    q.furthestTarget = (enemy.distance, index)
+                    q.furthestTarget = (enemy.distance, index, enemy)
 
 
             index += 1
 
-        # Take aim at the enemy we determined earlier, and reset it after
+        # Take aim at the enemy we determined earlier, and reset it after. Also shoot
         for tow in self.towers:
-            if tow.furthestTarget is not (0, 0):
+            if tow.active and tow.furthestTarget[0] != 0:
                 tow.aim_at(self.enemies[tow.furthestTarget[1]].pos().x(), self.enemies[tow.furthestTarget[1]].pos().y())
-                tow.furthestTarget = (0, 0)
+                tow.shoot(tow.furthestTarget[2], self.gamescene, self.projectiles)
+                tow.furthestTarget = (0, 0, None)
 
+        for proj in self.projectiles:
+            proj.move(self.projectiles, self.gamescene)

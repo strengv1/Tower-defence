@@ -14,16 +14,16 @@ class Enemy(QGraphicsEllipseItem):
             super().__init__(0, 0, self.radius*2, self.radius*2)
 
             self.hp = 10
-            self.speed = 4
+            self.speed = 2
             self.setBrush(Qt.blue)
             self.direction = 1
 
         if type == "fast":
-            self.radius = 7
+            self.radius = 10
             super().__init__(0, 0, self.radius*2, self.radius*2)
 
             self.hp = 6
-            self.speed = 6
+            self.speed = 3
             self.setBrush(Qt.blue)
             self.direction = 1
 
@@ -36,6 +36,10 @@ class Enemy(QGraphicsEllipseItem):
         self.hpBar.setBrush(Qt.red)
 
 
+
+    def delete(self, scene, enemies):
+        scene.removeItem(self)
+        enemies.remove(self)
 
     """
     Kuinka tehdä käännös, dir on string "left" tai "right"
