@@ -1,22 +1,27 @@
 import sys
 from PyQt5.QtWidgets import *
 from PyQt5 import QtGui, QtCore
-from PyQt5.QtGui import QBrush
-from PyQt5.QtCore import QTimer, Qt
-from math import floor
+from PyQt5.QtGui import QFont, QPixmap
+from PyQt5.QtCore import QTimer
 
-from src import Mapper, Enemy, Tower, Player
+import random
+from configparser import ConfigParser
+
+from src import Mapper, Enemy, Tower, Player, WaveManager
 
 class Peli(QMainWindow):
 
     def __init__(self):
         super().__init__()
+        self.parser = ConfigParser()
+        self.parser.read('config.ini')
 
-        self.title = "Main Menu"
-        self.left = 300
-        self.top = 150
-        self.width = 640
-        self.height = 700
+        self.title = self.parser.get("menu_window", "title")
+        self.left = self.parser.getint("menu_window", "left")
+        self.top = self.parser.getint("menu_window", "top")
+        self.width = self.parser.getint("menu_window", "width")
+        self.height = self.parser.getint("menu_window", "height")
+        self.icon_path = self.parser.get("file_path", "icon")
 
         self.init_mainmenu()
 
@@ -26,17 +31,22 @@ class Peli(QMainWindow):
     def init_mainmenu(self):
         self.setGeometry(self.left, self.top, self.width, self.height)
         self.setWindowTitle(self.title)
-        self.setWindowIcon(QtGui.QIcon("data/icon.png"))
+        self.setWindowIcon(QtGui.QIcon(self.icon_path))
         self.scene = QGraphicsScene()
 
         self.view = QGraphicsView(self.scene, self)
-        self.view.setGeometry(10,10,620,680)
+        self.view.setGeometry(10, 10, self.width-20, self.height-20)
 
+        label = QLabel()
+        label.setPixmap(QPixmap("data/menu_label.png"))
         play = QPushButton("Play")
         howto = QPushButton("How to play")
         exit = QPushButton("Exit")
         settings = QPushButton("Settings")
 
+
+        self.scene.addWidget(label)
+        label.setGeometry(-190, -60, 480, 128)
         self.scene.addWidget(play)
         play.setGeometry(0,100, 100, 50)
         self.scene.addWidget(howto)
@@ -46,7 +56,7 @@ class Peli(QMainWindow):
         self.scene.addWidget(settings)
         settings.setGeometry(0, 400, 100, 50)
 
-        play.setIcon(QtGui.QIcon("data/icon.png"))
+        play.setIcon(QtGui.QIcon(self.icon_path))
         play.setIconSize(QtCore.QSize(30, 30))
 
 
@@ -56,99 +66,66 @@ class Peli(QMainWindow):
         exit.clicked.connect(self.close_game)
         howto.clicked.connect(self.how_to_play)
 
-
-    """
-    Define what the exit button does
-    """
-    def close_game(self):
-        self.close()
-
-
-    """
-    Define what the "How to play" button does
-    """
-    def how_to_play(self):
-        print("Opettele pelaa")
-    """
-    Define what "spawn an enemy" button does in the sidebar
-    """
-    def spawn_enemy(self):
-        self.enemies.append(Enemy.Enemy(self.spawn))  # (spawn, type="basic")
-        self.gamescene.addItem(self.enemies[self.enemycount])
-        self.enemycount += 1
-
-    def spawn_fast_enemy(self):
-        self.enemies.append(Enemy.Enemy(self.spawn, "fast"))
-        self.gamescene.addItem(self.enemies[self.enemycount])
-        self.enemycount += 1
-
-    """
-    Go back to main menu, not saving the game (yet)
-    """
-    def back_to_menu(self):
-        self.close()
-        self.init_mainmenu()
-
-
-    """
-    Spawn a basicturret and set its original position (Outside the playable map)
-    """
-    def basicTurret_clicked(self):
-
-        if self.player.money >= 200:
-
-            self.player.money -= 200
-            self.towers.append(Tower.Tower())
-            self.towers[self.towercount].moveBy(len(self.map.blocks[0]) * self.blockWidth,
-                                                len(self.map.blocks) * self.blockHeight / 2)
-            self.gamescene.addItem(self.towers[self.towercount])
-            self.towercount += 1
-        else:
-            print("NOT ENOUGH CASH u poor mf")
-
     """
     Define what the "Play" button does
     """
     def game_setup(self):
 
-        self.blockHeight = 30
-        self.blockWidth = 30
+        self.waveManager = WaveManager.WaveManager(self.parser.get("game", "difficulty"))
+
+        self.blockHeight = self.parser.getint("game", "block_height")
+        self.blockWidth = self.parser.getint("game", "block_width")
         self.player = Player.Player()
         self.map = Mapper.Map()
 
         self.init_gamewindow()
-        self.spawn = Mapper.draw_map(self.gamescene, self.map.blocks, self.blockHeight, self.blockWidth)
-
+        self.spawn = self.map.draw_map(self.gamescene, self.blockHeight, self.blockWidth)
 
         self.setup_sidebar()
 
-        self.timer = QTimer()                                   #  Start the timer
+        self.timer = QTimer()  # Start the timer
         self.timer.timeout.connect(self.update)
-        self.timer.start(20)                                    # Frame-update-frequency in milliseconds
+        self.timer.start(20)  # Frame-update-frequency in milliseconds
 
-        #Towers!
         self.towers = []
-        self.towercount = 0
-
-        #Create enemies!
         self.enemies = []
-        self.enemycount = 0
-
-        #Projectiles
         self.projectiles = []
+
+
 
     """
     Initializes the window after pressing "play" from mainmenu
     """
     def init_gamewindow(self):
+        left = self.parser.getint("gamewindow", "left")
+        top = self.parser.getint("gamewindow", "top")
+        width = self.parser.getint("gamewindow", "width")
+        height = self.parser.getint("gamewindow", "height")
 
-        self.gamescene = QGraphicsScene()            #Attempt at fixing: Just add a new scene instead of using the last one
-        self.view.setScene(self.gamescene)
-        self.view.setGeometry(10, 10, 1000, 780)
-
-        self.setGeometry(300, 150, 1250, 800)
+        self.setGeometry(left, top, width, height)
         self.setWindowTitle("Peli")
         self.setCentralWidget(QWidget())
+
+        self.gamescene = QGraphicsScene()
+        self.gamescene.setSceneRect(0, 0, width-300, height-100)
+        self.view.setScene(self.gamescene)
+        self.view.setGeometry(10, 10, width-300, 0)
+
+
+        self.moneyText = QGraphicsTextItem("Money: " + str(self.player.money) + "$")
+        self.moneyText.setFont(QFont("helvetica"))
+        self.moneyText.setPos(0, -30)
+        self.gamescene.addItem(self.moneyText)
+
+        self.hpText = QGraphicsTextItem("Health: " + str(self.player.health))
+        self.hpText.setFont(QFont("helvetica"))
+        self.hpText.setPos(200, -30)
+        self.gamescene.addItem(self.hpText)
+
+        self.waveText = QGraphicsTextItem("Wave: " + str(self.waveManager.wave))
+        self.waveText.setFont(QFont("helvetica"))
+        self.waveText.setPos(400, -30)
+        self.gamescene.addItem(self.waveText)
 
         self.h_box = QHBoxLayout()
         self.sidebox = QVBoxLayout()
@@ -156,15 +133,20 @@ class Peli(QMainWindow):
         self.h_box.addWidget(self.view)
         self.h_box.addLayout(self.sidebox)
 
-
     """
     Sets up the sidebar, add all the buttons etc here
     """
     def setup_sidebar(self):
+        basicprice = self.parser.getint("turretprices","basic")
+        sniperprice = self.parser.getint("turretprices","sniper")
 
-        self.basicTurret = QPushButton("Basic Turret (200$)")
+        self.basicTurret = QPushButton("Basic Turret ({}$)".format(basicprice))
         self.sidebox.addWidget(self.basicTurret)
         self.basicTurret.clicked.connect(self.basicTurret_clicked)
+
+        self.sniperTurret = QPushButton("Sniper ({}$)".format(sniperprice))
+        self.sidebox.addWidget(self.sniperTurret)
+        self.sniperTurret.clicked.connect(self.sniperTurret_clicked)
 
 
         self.spawnEnemy = QPushButton("spawn an enemy")
@@ -175,14 +157,116 @@ class Peli(QMainWindow):
         self.sidebox.addWidget(self.spawnFastEnemy)
         self.spawnFastEnemy.clicked.connect(self.spawn_fast_enemy)
 
+        self.nextWave = QPushButton("Next wave")
+        self.sidebox.addWidget(self.nextWave)
+        self.nextWave.clicked.connect(self.nextWaveClicked)
+
         self.backtomainmenu = QPushButton("Back to main menu")
         self.sidebox.addWidget(self.backtomainmenu)
         self.backtomainmenu.clicked.connect(self.back_to_menu)
 
     """
+    Define what the exit button does
+    """
+    def close_game(self):
+        self.close()
+
+    """
+    Define what the "How to play" button does
+    """
+    def how_to_play(self):
+        print("Opettele pelaa")
+
+    """
+    Define what "spawn an enemy" button does in the sidebar
+    """
+    def spawn_enemy(self):
+        self.enemies.append(Enemy.Enemy(self.spawn, self.blockWidth, self.blockHeight))  # (spawn, width, height type="basic")
+        self.gamescene.addItem(self.enemies[len(self.enemies)-1])
+
+    def spawn_fast_enemy(self):
+        self.enemies.append(Enemy.Enemy(self.spawn, self.blockWidth, self.blockHeight, "fast"))
+        self.gamescene.addItem(self.enemies[len(self.enemies)-1])
+
+    """
+    Go back to main menu, not saving the game (yet)
+    """
+    def back_to_menu(self):
+        self.close()
+        self.init_mainmenu()
+
+    def nextWaveClicked(self):
+        self.waveManager.next_wave()
+        self.waveText.setHtml("Wave: " + str(self.waveManager.wave))
+
+    """
+    Spawn a basicturret and set its original position (Outside the playable map)
+    """
+    def basicTurret_clicked(self):
+        # Count basic turrets:
+        count = 0
+        for i in self.towers:
+            if i.type == "basic":
+                count += 1
+
+        price = self.parser.getint("turretprices", "basic") + count*30
+        if self.player.money >= price:
+
+            self.player.money -= price
+            self.moneyText.setHtml("Money: " + str(self.player.money) + "$")
+            self.basicTurret.setText("Basic Turret ({}$)".format(price + 30))
+
+            self.towers.append(Tower.Tower(self.blockHeight, self.blockWidth, self.map.blocks))
+            self.towers[len(self.towers)-1].setPos(len(self.map.blocks[0]) * self.blockWidth,
+                                                len(self.map.blocks) * self.blockHeight / 2)
+            self.gamescene.addItem(self.towers[len(self.towers)-1])
+        else:
+            print("NOT ENOUGH CASH u poor mf")
+
+    def sniperTurret_clicked(self):
+        count = 0
+        for i in self.towers:
+            if i.type == "sniper":
+                count += 1
+
+        price = self.parser.getint("turretprices", "sniper") + count*50
+
+        if self.player.money >= price:
+
+            self.player.money -= price
+            self.moneyText.setHtml("Money: " + str(self.player.money) + "$")
+            self.sniperTurret.setText("Sniper Turret ({}$)".format(price+50))
+
+            self.towers.append(Tower.Tower(self.blockHeight, self.blockWidth, self.map.blocks, "sniper"))
+            self.towers[len(self.towers)-1].setPos( len(self.map.blocks[0]) * self.blockWidth,
+                                                    len(self.map.blocks) * self.blockHeight / 2)
+            self.gamescene.addItem(self.towers[len(self.towers)-1])
+        else:
+            print("NOT ENOUGH CASH u poor mf")
+
+
+    """
     Call this every frame           
     """
     def update(self):
+        if not self.player.am_i_alive():
+            self.close()
+
+        """
+        Wavecontrol
+        """
+        randomizer = random.randint(0,1)
+
+        if self.waveManager.update():
+            if self.waveManager.wave <= 2:
+                self.spawn_enemy()
+            elif self.waveManager.wave == 3:
+                self.spawn_fast_enemy()
+            elif self.waveManager.wave > 3 and randomizer == 0:
+                self.spawn_fast_enemy()
+            elif self.waveManager.wave > 3 and randomizer == 1:
+                self.spawn_enemy()
+
         """
         Move the enemies
         """
@@ -190,32 +274,34 @@ class Peli(QMainWindow):
         for enemy in self.enemies:
             if enemy.hp <= 0:
                 enemy.delete(self.gamescene, self.enemies)
-                self.enemycount -= 1
+                self.player.money += enemy.prize
+                self.moneyText.setHtml("Money: " + str(self.player.money) + "$")
                 continue
             enemy.hpBar.setRect(0, -5, enemy.hp*2, 3)
             # Block the enemy is currently on
             block = enemy.get_block(self.map.blocks, self.blockWidth, self.blockHeight)
 
-            #Do whatever when the enemy gets to the end (NoneType-block for now)
             if block == None:
                 enemy.delete(self.gamescene, self.enemies)
-                self.enemycount -= 1
                 continue
+            if block.is_goal:
+                self.player.health -= enemy.damage
+                self.hpText.setHtml("Health: " + str(self.player.health))
+
+                enemy.delete(self.gamescene, self.enemies)
 
             # Check whether we are supposed to turn or not
             Enemy.check_for_checkpoint(enemy, block, self.map, self.blockWidth, self.blockHeight)
             enemy.move()
             # Determine who the towers want to aim at
             for q in self.towers:
-                if enemy.collidesWithItem(q.rangeIndicator) and enemy.distance > q.furthestTarget[0]:
+                if q.active and enemy.collidesWithItem(q.rangeIndicator) and enemy.distance > q.furthestTarget[0]:
                     q.furthestTarget = (enemy.distance, index, enemy)
-
-
             index += 1
 
         # Take aim at the enemy we determined earlier, and reset it after. Also shoot
         for tow in self.towers:
-            if tow.active and tow.furthestTarget[0] != 0:
+            if tow.active and len(self.enemies) != 0 and tow.furthestTarget[0] != 0:
                 tow.aim_at(self.enemies[tow.furthestTarget[1]].pos().x(), self.enemies[tow.furthestTarget[1]].pos().y())
                 tow.shoot(tow.furthestTarget[2], self.gamescene, self.projectiles)
                 tow.furthestTarget = (0, 0, None)

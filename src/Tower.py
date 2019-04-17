@@ -6,42 +6,71 @@ from src import Projectile
 
 class Tower(QGraphicsRectItem):
 
-    def __init__(self, type = "basic"):
-        super().__init__(0, 0, 30, 30)
+    def __init__(self, blockHeight, blockWidth, blocks, type = "basic"):
+        super().__init__(0, 0, blockHeight, blockWidth)
         self.setFlag(self.ItemIsMovable, self.ItemIsSelectable)
         self.active = False
         self.timer = 1000
+        self.blockWidth = blockWidth
+        self.blockHeight = blockHeight
+        self.type = type
+        self.blocks = blocks
         if type == "basic":
             self.attackSpeed = 20
-            self.range = 200
+            self.range = 6*blockHeight - blockHeight/3
             self.damage = 2
             self.furthestTarget = (0, 0, None)  # (Enemy's distance, index in list)
 
             self.setBrush(QBrush(Qt.blue))
-            self.setPos(self.range / 2 - 15, self.range / 2 - 15)
+            self.setPos(self.range / 2 - blockWidth/2, self.range / 2 - blockHeight/2)
 
-            self.pipe = QGraphicsRectItem(0, 0, 20, 10, self)
+            self.pipe = QGraphicsRectItem(0, 0, blockHeight-blockHeight/3, blockHeight/3, self)
             self.pipe.setBrush(QBrush(Qt.darkBlue))
-            self.pipe.setPos(15, 10)
-            self.pipe.setTransformOriginPoint(QPointF(0, 5))
+            self.pipe.setPos(blockHeight/2, blockHeight/3)
+            self.pipe.setTransformOriginPoint(QPointF(0, blockHeight/6))
 
-            self.projectiles = []
 
-            self.rangeIndicator = QGraphicsEllipseItem(-self.range/2+15, -self.range/2+15, self.range, self.range, self)
+        if type == "sniper":
+            self.attackSpeed = 60
+            self.range = 40 * blockHeight
+            self.damage = 5
+            self.furthestTarget = (0, 0, None)  # (Enemy's distance, index in list)
+
+            self.setBrush(QBrush(Qt.darkGreen))
+            self.setPos(self.range / 2 - blockWidth / 2, self.range / 2 - blockHeight / 2)
+
+            self.pipe = QGraphicsRectItem(0, 0, blockHeight, blockHeight / 5, self)
+            self.pipe.setBrush(QBrush(Qt.darkGreen))
+            self.pipe.setPos(blockWidth / 2, blockHeight / 2.5)
+            self.pipe.setTransformOriginPoint(QPointF(0, blockHeight / 10))
+
+        self.rangeIndicator = QGraphicsEllipseItem(-self.range/2+blockWidth/2, -self.range/2+blockHeight/2, self.range, self.range, self)
 
 
     def mouseMoveEvent(self, event):
         self.setPos(event.scenePos())
+
+
         self.pipe.setBrush(Qt.darkGray)
         self.setBrush(Qt.gray)
-        self.setPos(QPointF(self.x() - self.x() % 30, self.y() - self.y() % 30))
+        self.setPos(QPointF(self.x() - self.x() % self.blockWidth, self.y() - self.y() % self.blockHeight))
 
     def mouseReleaseEvent(self, event):
-        self.setBrush(Qt.blue)
-        self.pipe.setBrush(Qt.darkBlue)
-        self.setFlag(self.ItemIsMovable, False)
-        self.rangeIndicator.hide()
-        self.active = True
+        block = self.blocks[int(self.scenePos().y()/self.blockHeight)][int(self.scenePos().x()/self.blockWidth)]
+        if not block.is_grass:
+            print("Can't place turret here!")
+
+        else:
+            if self.type == "basic":
+                self.setBrush(Qt.blue)
+                self.pipe.setBrush(Qt.darkBlue)
+            elif self.type == "sniper":
+                self.setBrush(QBrush(Qt.darkGreen))
+                self.pipe.setBrush(QBrush(Qt.darkGreen))
+
+            self.setFlag(self.ItemIsMovable, False)
+            self.rangeIndicator.hide()
+            self.active = True
 
     def shoot(self, enemy, scene, projectiles):
         if self.timer >= self.attackSpeed:
@@ -49,12 +78,18 @@ class Tower(QGraphicsRectItem):
             x_dir = cos(self.pipe.rotation()*pi/180)
             y_dir = sin(self.pipe.rotation()*pi/180)
 
+            if self.type == "basic":
+                proj = Projectile.Projectile((x_dir, y_dir), self.blockHeight/1.5, QPointF(self.x()+15, self.y()+15), enemy, self.damage, self.range)   #(dir, speed, pos, target, dmg, range)
+                projectiles.append(proj)
+                scene.addItem(proj)
 
-            proj = Projectile.Projectile((x_dir, y_dir), 20, QPointF(self.x()+15, self.y()+15), enemy, self.damage, self.range)   #(dir, speed, pos, target, dmg, range)
-            projectiles.append(proj)
-            scene.addItem(proj)
+            elif self.type == "sniper":
+                self.furthestTarget[2].hp -= self.damage
 
-            #enemy.hp -= self.damage
+            elif self.type == "aoe":
+                for i in range(6):
+                    Projectile.Projectile((x_dir, y_dir), 25, QPointF(self.x() + 15, self.y() + 15), enemy, self.damage,
+                                          self.range)
             self.timer = 0
 
         elif self.timer <= self.attackSpeed:

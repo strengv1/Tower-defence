@@ -16,17 +16,22 @@ class Map():
             idx = 0
             for line in file:
                 self.blocks.append([])          #Lisätään Block-listaan "sub_lista", jotka vastaavat vaakarivejä kartalla.
-
-                for c in line:                  #Parsitaan tiedosto siten, että "." on tavallinen ruohonpala, "#" on polku, "-" on checkpoint ja "s" on spawn.
-                                                #Rivinvaihtojen tilalle listaan menee "None", joka myöhemmissä vaiheissa täytyy muistaa skipata.
+                """
+                Parsitaan tiedosto siten, että "." on tavallinen ruohonpala, "#" on 
+                polku, "-" on checkpoint, "g" on maali ja "s" on spawn.
+                Rivinvaihtojen tilalle listaan menee "None"
+                """
+                for c in line:
                     if c == ".":
-                        self.blocks[idx].append(Block.Block())
+                        self.blocks[idx].append(Block.Block(False, False, False, False, True))
                     elif c == "#":
-                        self.blocks[idx].append(Block.Block(True, False, False))  # Block(is_path, is_checkPoint, is_spawn)
+                        self.blocks[idx].append(Block.Block(True))  # Block(is_path, is_checkPoint, is_spawn)
                     elif c == "-":
-                        self.blocks[idx].append(Block.Block(False, True, False))
+                        self.blocks[idx].append(Block.Block(False, True))
                     elif c == "s":
                         self.blocks[idx].append((Block.Block(False, False, True)))
+                    elif c == "g":
+                        self.blocks[idx].append((Block.Block(False, False, False, True)))
                     else:
                         self.blocks[idx].append(None)
                 idx += 1
@@ -59,43 +64,42 @@ class Map():
             else:
                 return "right"
 
-
-    def get_blocks(self):
-        return self.blocks
-"""
-Kartan piirto, ottaa sisäänsä scenen johon halutaan palikat piirrettäväksi, sekä listan joka sisältää palikat.
-Palauttaa spawnin sijainnin
-"""
-def draw_map(scene, blocks, height, width):
-    x = 0
-    y = 0
-    blockheight = height
-    blockwidth = width
-    for horizontal in blocks:
-        for b in horizontal:
-            rect = QGraphicsRectItem(blockwidth*x, blockheight*y, blockwidth, blockheight)
-            if b != None:
-                b.x = x
-                b.y = y
-                b.center = (blockwidth*x + blockwidth/2, blockheight*y + blockheight/2)
-                if b.is_path:
-                    rect.setBrush(QBrush(Qt.lightGray))
-                elif b.is_checkPoint:
-                    rect.setBrush(QBrush(Qt.darkGray))
-
-                elif b.is_spawn:
-                    rect.setBrush(Qt.red)
-                    spawn = (x, y)
-                else:
-                    rect.setBrush(Qt.green)
-
-            if b != None:
-                scene.addItem(rect)
-            x += 1
+    """
+    Kartan piirto, ottaa sisäänsä scenen johon halutaan palikat piirrettäväksi, sekä listan joka sisältää palikat.
+    Palauttaa spawnin sijainnin
+    """
+    def draw_map(self, scene, height, width):
         x = 0
+        y = 0
+        blockheight = height
+        blockwidth = width
+        for horizontal in self.blocks:
+            for b in horizontal:
+                rect = QGraphicsRectItem(blockwidth*x, blockheight*y, blockwidth, blockheight)
+                if b != None:
+                    b.x = x
+                    b.y = y
+                    b.center = (blockwidth*x + blockwidth/2, blockheight*y + blockheight/2)
+                    if b.is_path:
+                        rect.setBrush(QBrush(Qt.lightGray))
+                    elif b.is_checkPoint:
+                        rect.setBrush(QBrush(Qt.lightGray))
 
-        y += 1
-    return spawn
+                    elif b.is_spawn:
+                        rect.setBrush(Qt.red)
+                        spawn = (x, y)
+                    elif b.is_goal:
+                        rect.setBrush(Qt.darkGray)
+                    else:
+                        rect.setBrush(Qt.green)
+
+                if b != None:
+                    scene.addItem(rect)
+                x += 1
+            x = 0
+
+            y += 1
+        return spawn
 
 
 

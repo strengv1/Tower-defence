@@ -4,31 +4,31 @@ from PyQt5.QtCore import Qt
 from math import floor
 
 
-"""
-Enemy's position (enemy.pos()) is top left corner. To get the correct pos, call (enemy.pos().x() + radius, enemy.pos().y() + radius)
-"""
 class Enemy(QGraphicsEllipseItem):
-    def __init__(self, spawn, type = "basic"):
+    def __init__(self, spawn, width, height, type = "basic"):
         if type == "basic":
-            self.radius = 13
+            self.radius = width/2 - width/7
             super().__init__(0, 0, self.radius*2, self.radius*2)
 
             self.hp = 10
-            self.speed = 2
+            self.speed = width/20
             self.setBrush(Qt.blue)
-            self.direction = 1
+            self.damage = 4
+            self.prize = 12
 
         if type == "fast":
-            self.radius = 10
+            self.radius = width/3 - 2
             super().__init__(0, 0, self.radius*2, self.radius*2)
 
             self.hp = 6
-            self.speed = 3
+            self.speed = width/15
             self.setBrush(Qt.blue)
-            self.direction = 1
+            self.damage = 2
+            self.prize = 8
 
-        self.moveBy(0, 15-self.radius)
-        self.moveBy(spawn[0]*30, spawn[1]*30)
+        self.direction = 1
+        self.moveBy(0, width/2-self.radius)
+        self.moveBy(spawn[0]*width, spawn[1]*height)
         self.in_a_checkpoint = False
 
         self.distance = 0
