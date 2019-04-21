@@ -3,9 +3,8 @@ from src import Enemy
 
 class WaveManager():
 
-    def __init__(self, difficulty="normal"):
+    def __init__(self):
 
-        self.difficulty = difficulty
         self.enemies = []
         self.active = False
         self.wave = 0
@@ -17,7 +16,9 @@ class WaveManager():
         if not self.active:
             if self.wave <= 3:
                 self.enemyCount = 7 + 3*self.wave
-            elif self.wave > 3:
+            elif self.wave > 3 and self.wave < 5:
+                self.enemyCount = 7 + 5*self.wave
+            elif self.wave >= 5:
                 self.enemyCount = 7 + 5*self.wave
             self.active = True
             self.wave += 1

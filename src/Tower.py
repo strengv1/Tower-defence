@@ -15,6 +15,7 @@ class Tower(QGraphicsRectItem):
         self.blockHeight = blockHeight
         self.type = type
         self.blocks = blocks
+
         if type == "basic":
             self.attackSpeed = 20
             self.range = 6*blockHeight - blockHeight/3
@@ -29,6 +30,19 @@ class Tower(QGraphicsRectItem):
             self.pipe.setPos(blockHeight/2, blockHeight/3)
             self.pipe.setTransformOriginPoint(QPointF(0, blockHeight/6))
 
+        if type == "fast":
+            self.attackSpeed = 10
+            self.range = 5 * blockHeight - blockHeight / 3
+            self.damage = 1.2
+            self.furthestTarget = (0, 0, None)  # (Enemy's distance, index in list)
+
+            self.setBrush(QBrush(Qt.cyan))
+            self.setPos(self.range / 2 - blockWidth / 2, self.range / 2 - blockHeight / 2)
+
+            self.pipe = QGraphicsRectItem(0, 0, blockHeight - blockHeight / 3.5, blockHeight / 3, self)
+            self.pipe.setBrush(QBrush(Qt.darkCyan))
+            self.pipe.setPos(blockHeight / 2, blockHeight / 3)
+            self.pipe.setTransformOriginPoint(QPointF(0, blockHeight / 6))
 
         if type == "sniper":
             self.attackSpeed = 60
@@ -67,6 +81,9 @@ class Tower(QGraphicsRectItem):
             elif self.type == "sniper":
                 self.setBrush(QBrush(Qt.darkGreen))
                 self.pipe.setBrush(QBrush(Qt.darkGreen))
+            elif self.type == "fast":
+                self.setBrush(QBrush(Qt.cyan))
+                self.pipe.setBrush(QBrush(Qt.darkCyan))
 
             self.setFlag(self.ItemIsMovable, False)
             self.rangeIndicator.hide()
@@ -86,10 +103,14 @@ class Tower(QGraphicsRectItem):
             elif self.type == "sniper":
                 self.furthestTarget[2].hp -= self.damage
 
-            elif self.type == "aoe":
-                for i in range(6):
-                    Projectile.Projectile((x_dir, y_dir), 25, QPointF(self.x() + 15, self.y() + 15), enemy, self.damage,
-                                          self.range)
+
+            elif self.type == "fast":
+
+                proj = Projectile.Projectile((x_dir, y_dir), self.blockHeight / 1.5,
+                                             QPointF(self.x() + 15, self.y() + 15), enemy, self.damage,
+                                             self.range)  # (dir, speed, pos, target, dmg, range)
+                projectiles.append(proj)
+                scene.addItem(proj)
             self.timer = 0
 
         elif self.timer <= self.attackSpeed:

@@ -5,12 +5,12 @@ from math import floor
 
 
 class Enemy(QGraphicsEllipseItem):
-    def __init__(self, spawn, width, height, type = "basic"):
+    def __init__(self, spawn, width, height, health, type = "basic"):
         if type == "basic":
             self.radius = width/2 - width/7
             super().__init__(0, 0, self.radius*2, self.radius*2)
 
-            self.hp = 10
+            self.hp = health
             self.speed = width/20
             self.setBrush(Qt.blue)
             self.damage = 4
@@ -20,7 +20,7 @@ class Enemy(QGraphicsEllipseItem):
             self.radius = width/3 - 2
             super().__init__(0, 0, self.radius*2, self.radius*2)
 
-            self.hp = 6
+            self.hp = health
             self.speed = width/15
             self.setBrush(Qt.blue)
             self.damage = 2

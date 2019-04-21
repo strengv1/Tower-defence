@@ -71,7 +71,7 @@ class Peli(QMainWindow):
     """
     def game_setup(self):
 
-        self.waveManager = WaveManager.WaveManager(self.parser.get("game", "difficulty"))
+        self.waveManager = WaveManager.WaveManager()
 
         self.blockHeight = self.parser.getint("game", "block_height")
         self.blockWidth = self.parser.getint("game", "block_width")
@@ -139,6 +139,7 @@ class Peli(QMainWindow):
     def setup_sidebar(self):
         basicprice = self.parser.getint("turretprices","basic")
         sniperprice = self.parser.getint("turretprices","sniper")
+        fastprice = self.parser.getint("turretprices", "fast")
 
         self.basicTurret = QPushButton("Basic Turret ({}$)".format(basicprice))
         self.sidebox.addWidget(self.basicTurret)
@@ -148,14 +149,10 @@ class Peli(QMainWindow):
         self.sidebox.addWidget(self.sniperTurret)
         self.sniperTurret.clicked.connect(self.sniperTurret_clicked)
 
+        self.fastTurret = QPushButton("Fast turret ({}$)".format(fastprice))
+        self.sidebox.addWidget(self.fastTurret)
+        self.fastTurret.clicked.connect(self.fastTurret_clicked)
 
-        self.spawnEnemy = QPushButton("spawn an enemy")
-        self.sidebox.addWidget(self.spawnEnemy)
-        self.spawnEnemy.clicked.connect(self.spawn_enemy)
-
-        self.spawnFastEnemy = QPushButton("Spawn a fast enemy")
-        self.sidebox.addWidget(self.spawnFastEnemy)
-        self.spawnFastEnemy.clicked.connect(self.spawn_fast_enemy)
 
         self.nextWave = QPushButton("Next wave")
         self.sidebox.addWidget(self.nextWave)
@@ -171,22 +168,21 @@ class Peli(QMainWindow):
     def close_game(self):
         self.close()
 
+
+    def spawn_enemy(self, health):
+        self.enemies.append(Enemy.Enemy(self.spawn, self.blockWidth, self.blockHeight, health))  # (spawn, width, height type="basic")
+        self.gamescene.addItem(self.enemies[len(self.enemies) - 1])
+
+    def spawn_fast_enemy(self, health):
+        self.enemies.append(Enemy.Enemy(self.spawn, self.blockWidth, self.blockHeight, health, "fast"))
+        self.gamescene.addItem(self.enemies[len(self.enemies) - 1])
+
     """
     Define what the "How to play" button does
     """
     def how_to_play(self):
         print("Opettele pelaa")
 
-    """
-    Define what "spawn an enemy" button does in the sidebar
-    """
-    def spawn_enemy(self):
-        self.enemies.append(Enemy.Enemy(self.spawn, self.blockWidth, self.blockHeight))  # (spawn, width, height type="basic")
-        self.gamescene.addItem(self.enemies[len(self.enemies)-1])
-
-    def spawn_fast_enemy(self):
-        self.enemies.append(Enemy.Enemy(self.spawn, self.blockWidth, self.blockHeight, "fast"))
-        self.gamescene.addItem(self.enemies[len(self.enemies)-1])
 
     """
     Go back to main menu, not saving the game (yet)
@@ -222,7 +218,25 @@ class Peli(QMainWindow):
             self.gamescene.addItem(self.towers[len(self.towers)-1])
         else:
             print("NOT ENOUGH CASH u poor mf")
+    def fastTurret_clicked(self):
+        count = 0
+        for i in self.towers:
+            if i.type == "fast":
+                count += 1
 
+        price = self.parser.getint("turretprices", "fast") + count * 30
+        if self.player.money >= price:
+
+            self.player.money -= price
+            self.moneyText.setHtml("Money: " + str(self.player.money) + "$")
+            self.fastTurret.setText("Fast Turret ({}$)".format(price + 30))
+
+            self.towers.append(Tower.Tower(self.blockHeight, self.blockWidth, self.map.blocks, "fast"))
+            self.towers[len(self.towers) - 1].setPos(len(self.map.blocks[0]) * self.blockWidth,
+                                                     len(self.map.blocks) * self.blockHeight / 2)
+            self.gamescene.addItem(self.towers[len(self.towers) - 1])
+        else:
+            print("NOT ENOUGH CASH u poor mf")
     def sniperTurret_clicked(self):
         count = 0
         for i in self.towers:
@@ -255,17 +269,29 @@ class Peli(QMainWindow):
         """
         Wavecontrol
         """
-        randomizer = random.randint(0,1)
+        randomizer = random.randint(0, 1)
 
         if self.waveManager.update():
             if self.waveManager.wave <= 2:
-                self.spawn_enemy()
+                self.spawn_enemy(10)
             elif self.waveManager.wave == 3:
-                self.spawn_fast_enemy()
-            elif self.waveManager.wave > 3 and randomizer == 0:
-                self.spawn_fast_enemy()
-            elif self.waveManager.wave > 3 and randomizer == 1:
-                self.spawn_enemy()
+                self.spawn_fast_enemy(6)
+            elif self.waveManager.wave > 3 and self.waveManager.wave < 5 and randomizer == 0:
+                self.spawn_fast_enemy(6)
+            elif self.waveManager.wave > 3 and self.waveManager.wave < 5 and randomizer == 1:
+                self.spawn_enemy(10)
+
+            elif self.waveManager.wave >= 5 and self.waveManager.wave < 8 and randomizer == 0:
+                self.spawn_fast_enemy(6+self.waveManager.wave/3)
+            elif self.waveManager.wave >= 5 and self.waveManager.wave < 8 and randomizer == 1:
+                self.spawn_enemy(10+self.waveManager.wave/3)
+
+            elif self.waveManager.wave >= 8 and randomizer == 0:
+                self.spawn_fast_enemy(6+self.waveManager.wave/2)
+            elif self.waveManager.wave >= 8 and randomizer == 1:
+                self.spawn_enemy(10+self.waveManager.wave/2)
+
+
 
         """
         Move the enemies
