@@ -40,7 +40,6 @@ class Peli(QMainWindow):
         label = QLabel()
         label.setPixmap(QPixmap("data/menu_label.png"))
         play = QPushButton("Play")
-        howto = QPushButton("How to play")
         exit = QPushButton("Exit")
         settings = QPushButton("Settings")
 
@@ -49,12 +48,11 @@ class Peli(QMainWindow):
         label.setGeometry(-190, -60, 480, 128)
         self.scene.addWidget(play)
         play.setGeometry(0,100, 100, 50)
-        self.scene.addWidget(howto)
-        howto.setGeometry(0, 200, 100, 50)
+        self.scene.addWidget(settings)
+        settings.setGeometry(0, 200, 100, 50)
         self.scene.addWidget(exit)
         exit.setGeometry(0, 300, 100, 50)
-        self.scene.addWidget(settings)
-        settings.setGeometry(0, 400, 100, 50)
+
 
         play.setIcon(QtGui.QIcon(self.icon_path))
         play.setIconSize(QtCore.QSize(30, 30))
@@ -64,8 +62,7 @@ class Peli(QMainWindow):
 
         play.clicked.connect(self.game_setup)
         exit.clicked.connect(self.close_game)
-        howto.clicked.connect(self.how_to_play)
-
+        settings.clicked.connect(self.settings)
     """
     Define what the "Play" button does
     """
@@ -76,7 +73,7 @@ class Peli(QMainWindow):
         self.blockHeight = self.parser.getint("game", "block_height")
         self.blockWidth = self.parser.getint("game", "block_width")
         self.player = Player.Player()
-        self.map = Mapper.Map()
+        self.map = Mapper.Map(self.parser.get("file_path","map"))
 
         self.init_gamewindow()
         self.spawn = self.map.draw_map(self.gamescene, self.blockHeight, self.blockWidth)
@@ -85,12 +82,41 @@ class Peli(QMainWindow):
 
         self.timer = QTimer()  # Start the timer
         self.timer.timeout.connect(self.update)
-        self.timer.start(20)  # Frame-update-frequency in milliseconds
+        self.timer.start(17)  # Frame-update-frequency in milliseconds (60fps => 1/60 = 0.01666, hence 17ms)
 
         self.towers = []
         self.enemies = []
         self.projectiles = []
 
+    def settings(self):
+
+        self.settingsScene = QGraphicsScene()
+        self.settingsScene.setSceneRect(0, 0, 500, 300)
+        self.view.setScene(self.settingsScene)
+        self.setWindowTitle("Settings")
+
+        map1 = QPushButton("Map1")
+        map2 = QPushButton("Map2")
+        back = QPushButton("Back")
+        text = QGraphicsTextItem("Choose a map")
+        text.setFont(QFont("helvetica"))
+        map1.clicked.connect(self.map1_clicked)
+        map2.clicked.connect(self.map2_clicked)
+        back.clicked.connect(self.back_to_menu)
+
+        self.settingsScene.addItem(text)
+        text.setPos(180, -50)
+        self.settingsScene.addWidget(map1)
+        map1.setGeometry(200, 0, 100, 50)
+        self.settingsScene.addWidget(map2)
+        map2.setGeometry(200, 100, 100, 50)
+        self.settingsScene.addWidget(back)
+        back.setGeometry(200, 250, 100, 50)
+
+    def map1_clicked(self):
+        self.parser.set("file_path", "map", "map1.txt")
+    def map2_clicked(self):
+        self.parser.set("file_path", "map", "map2.txt")
 
 
     """
@@ -101,9 +127,10 @@ class Peli(QMainWindow):
         top = self.parser.getint("gamewindow", "top")
         width = self.parser.getint("gamewindow", "width")
         height = self.parser.getint("gamewindow", "height")
+        title = self.parser.get("gamewindow", "title")
 
         self.setGeometry(left, top, width, height)
-        self.setWindowTitle("Peli")
+        self.setWindowTitle(title)
         self.setCentralWidget(QWidget())
 
         self.gamescene = QGraphicsScene()
@@ -168,7 +195,6 @@ class Peli(QMainWindow):
     def close_game(self):
         self.close()
 
-
     def spawn_enemy(self, health):
         self.enemies.append(Enemy.Enemy(self.spawn, self.blockWidth, self.blockHeight, health))  # (spawn, width, height type="basic")
         self.gamescene.addItem(self.enemies[len(self.enemies) - 1])
@@ -176,12 +202,6 @@ class Peli(QMainWindow):
     def spawn_fast_enemy(self, health):
         self.enemies.append(Enemy.Enemy(self.spawn, self.blockWidth, self.blockHeight, health, "fast"))
         self.gamescene.addItem(self.enemies[len(self.enemies) - 1])
-
-    """
-    Define what the "How to play" button does
-    """
-    def how_to_play(self):
-        print("Opettele pelaa")
 
 
     """
@@ -217,7 +237,8 @@ class Peli(QMainWindow):
                                                 len(self.map.blocks) * self.blockHeight / 2)
             self.gamescene.addItem(self.towers[len(self.towers)-1])
         else:
-            print("NOT ENOUGH CASH u poor mf")
+            print("Not enough money!")
+
     def fastTurret_clicked(self):
         count = 0
         for i in self.towers:
@@ -236,7 +257,8 @@ class Peli(QMainWindow):
                                                      len(self.map.blocks) * self.blockHeight / 2)
             self.gamescene.addItem(self.towers[len(self.towers) - 1])
         else:
-            print("NOT ENOUGH CASH u poor mf")
+            print("Not enough money!")
+
     def sniperTurret_clicked(self):
         count = 0
         for i in self.towers:
@@ -256,7 +278,7 @@ class Peli(QMainWindow):
                                                     len(self.map.blocks) * self.blockHeight / 2)
             self.gamescene.addItem(self.towers[len(self.towers)-1])
         else:
-            print("NOT ENOUGH CASH u poor mf")
+            print("Not enough money!")
 
 
     """
@@ -267,7 +289,8 @@ class Peli(QMainWindow):
             self.close()
 
         """
-        Wavecontrol
+        Wavecontrol:
+        a really messy way to make turns get harder, but I had to settle for this because I ran out of time.
         """
         randomizer = random.randint(0, 1)
 
@@ -282,19 +305,19 @@ class Peli(QMainWindow):
                 self.spawn_enemy(10)
 
             elif self.waveManager.wave >= 5 and self.waveManager.wave < 8 and randomizer == 0:
-                self.spawn_fast_enemy(6+self.waveManager.wave/3)
+                self.spawn_fast_enemy(6+self.waveManager.wave/2.3)
             elif self.waveManager.wave >= 5 and self.waveManager.wave < 8 and randomizer == 1:
-                self.spawn_enemy(10+self.waveManager.wave/3)
+                self.spawn_enemy(10+self.waveManager.wave/2.3)
 
             elif self.waveManager.wave >= 8 and randomizer == 0:
-                self.spawn_fast_enemy(6+self.waveManager.wave/2)
+                self.spawn_fast_enemy(6+self.waveManager.wave/1.5)
             elif self.waveManager.wave >= 8 and randomizer == 1:
-                self.spawn_enemy(10+self.waveManager.wave/2)
+                self.spawn_enemy(10+self.waveManager.wave/1.5)
 
 
 
         """
-        Move the enemies
+        Update the enemies
         """
         index = 0
         for enemy in self.enemies:

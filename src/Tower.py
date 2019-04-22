@@ -7,7 +7,7 @@ from src import Projectile
 class Tower(QGraphicsRectItem):
 
     def __init__(self, blockHeight, blockWidth, blocks, type = "basic"):
-        super().__init__(0, 0, blockHeight, blockWidth)
+        super().__init__(0, 0, blockWidth, blockHeight)
         self.setFlag(self.ItemIsMovable, self.ItemIsSelectable)
         self.active = False
         self.timer = 1000
@@ -15,12 +15,12 @@ class Tower(QGraphicsRectItem):
         self.blockHeight = blockHeight
         self.type = type
         self.blocks = blocks
+        self.furthestTarget = (0, 0, None)  # (Enemy's distance, index in list)
 
         if type == "basic":
             self.attackSpeed = 20
             self.range = 6*blockHeight - blockHeight/3
             self.damage = 2
-            self.furthestTarget = (0, 0, None)  # (Enemy's distance, index in list)
 
             self.setBrush(QBrush(Qt.blue))
             self.setPos(self.range / 2 - blockWidth/2, self.range / 2 - blockHeight/2)
@@ -34,7 +34,6 @@ class Tower(QGraphicsRectItem):
             self.attackSpeed = 10
             self.range = 5 * blockHeight - blockHeight / 3
             self.damage = 1.2
-            self.furthestTarget = (0, 0, None)  # (Enemy's distance, index in list)
 
             self.setBrush(QBrush(Qt.cyan))
             self.setPos(self.range / 2 - blockWidth / 2, self.range / 2 - blockHeight / 2)
@@ -48,7 +47,6 @@ class Tower(QGraphicsRectItem):
             self.attackSpeed = 60
             self.range = 40 * blockHeight
             self.damage = 5
-            self.furthestTarget = (0, 0, None)  # (Enemy's distance, index in list)
 
             self.setBrush(QBrush(Qt.darkGreen))
             self.setPos(self.range / 2 - blockWidth / 2, self.range / 2 - blockHeight / 2)
@@ -105,7 +103,6 @@ class Tower(QGraphicsRectItem):
 
 
             elif self.type == "fast":
-
                 proj = Projectile.Projectile((x_dir, y_dir), self.blockHeight / 1.5,
                                              QPointF(self.x() + 15, self.y() + 15), enemy, self.damage,
                                              self.range)  # (dir, speed, pos, target, dmg, range)

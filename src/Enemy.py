@@ -3,9 +3,15 @@ from PyQt5.QtGui import QBrush
 from PyQt5.QtCore import Qt
 from math import floor
 
+from configparser import ConfigParser
+
 
 class Enemy(QGraphicsEllipseItem):
     def __init__(self, spawn, width, height, health, type = "basic"):
+        parser = ConfigParser()
+        parser.read('config.ini')
+
+        self.blockWidth = parser.getint("game", "block_width")
         if type == "basic":
             self.radius = width/2 - width/7
             super().__init__(0, 0, self.radius*2, self.radius*2)
@@ -32,7 +38,7 @@ class Enemy(QGraphicsEllipseItem):
         self.in_a_checkpoint = False
 
         self.distance = 0
-        self.hpBar = QGraphicsRectItem(0,-5,self.hp*2,3, self)
+        self.hpBar = QGraphicsRectItem(0, -5, self.hp*2, 3, self)
         self.hpBar.setBrush(Qt.red)
 
 
