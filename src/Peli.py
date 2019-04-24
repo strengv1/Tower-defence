@@ -338,7 +338,7 @@ class Peli(QMainWindow):
                 self.hpText.setHtml("Health: " + str(self.player.health))
 
                 enemy.delete(self.gamescene, self.enemies)
-
+                continue
             # Check whether we are supposed to turn or not
             Enemy.check_for_checkpoint(enemy, block, self.map, self.blockWidth, self.blockHeight)
             enemy.move()
